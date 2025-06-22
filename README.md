@@ -1,137 +1,317 @@
-# Bookshelf
+# BookShelf API Documentation
 
-A full-stack web application for managing your personal book collection, built with React, Express, and SQLite. Bookshelf provides a modern interface for book management with features like authentication, book listing, and more.
+This document provides detailed information about the BookShelf API endpoints, their requirements, and expected responses.
 
-## Features
-
-- User authentication (login/register)
-- Book management (add, edit, delete)
-- Modern UI with Tailwind CSS
-- Responsive design
-- Form validation with React Hook Form and Zod
-- State management with Redux Toolkit
-- RESTful API with Express
-- SQLite database
-
-## Tech Stack
-
-### Frontend
-
-- React 18
-- Vite
-- Redux Toolkit
-- React Router DOM
-- React Hook Form
-- Tailwind CSS
-- Axios
-- Zod (validation)
-
-### Backend
-
-- Express.js
-- SQLite3
-- JWT Authentication
-- CORS
-
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd bookshelf
-```
-
-2. Install dependencies for both frontend and backend:
-
-```bash
-npm run install:all
-```
-
-3. Set up the database:
-
-```bash
-cd server
-npm run setup-db
-cd ..
-```
-
-## Running the Application
-
-To run both frontend and backend concurrently:
-
-```bash
-npm run dev:all
-```
-
-Or run them separately:
-
-Frontend (development):
-
-```bash
-npm run dev
-```
-
-Backend (development):
-
-```bash
-npm run server
-```
-
-The application will be available at:
-
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
-
-## Available Scripts
-
-- `npm run dev` - Start the frontend development server
-- `npm run server` - Start the backend development server
-- `npm run dev:all` - Start both frontend and backend concurrently
-- `npm run build` - Build the frontend for production
-- `npm run preview` - Preview the production build
-- `npm run lint` - Run ESLint
-- `npm run install:all` - Install dependencies for both frontend and backend
-
-## Project Structure
+## Base URL
 
 ```
-bookshelf/
-├── src/               # Frontend source code
-├── server/           # Backend source code
-│   ├── db/          # Database setup and migrations
-│   ├── routes/      # API routes
-│   └── server.js    # Main server file
-├── public/          # Static assets
-└── package.json     # Project configuration
+http://localhost:3001
 ```
 
-## API Endpoints
+## Authentication
 
-The backend provides the following main endpoints:
+The API uses JWT (JSON Web Tokens) for authentication. Most endpoints require authentication via a JWT token stored in an HTTP-only cookie.
 
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
-- `GET /api/books` - Get all books
-- `POST /api/books` - Create a new book
-- `PUT /api/books/:id` - Update a book
-- `DELETE /api/books/:id` - Delete a book
+### Authentication Endpoints
 
-## Contributing
+#### Register User
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+```http
+POST /api/auth/register
+```
 
-## License
+**Request Body:**
 
-This project is licensed under the MIT License.
+```json
+{
+  "username": "string", // required
+  "email": "string", // required
+  "password": "string" // required
+}
+```
+
+**Response:**
+
+- Status: 201 Created
+- Body:
+
+```json
+{
+  "user": {
+    "id": "number",
+    "username": "string",
+    "email": "string"
+  }
+}
+```
+
+#### Login
+
+```http
+POST /api/auth/login
+```
+
+**Request Body:**
+
+```json
+{
+  "username": "string", // required
+  "password": "string" // required
+}
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "user": {
+    "id": "number",
+    "username": "string",
+    "email": "string"
+  }
+}
+```
+
+#### Get Current User
+
+```http
+GET /api/auth/me
+```
+
+**Headers:**
+
+- Requires authentication cookie
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "user": {
+    "id": "number",
+    "username": "string",
+    "email": "string"
+  }
+}
+```
+
+#### Logout
+
+```http
+POST /api/auth/logout
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+## Book Endpoints
+
+### Get All Books
+
+```http
+GET /api/books
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+[
+  {
+    "id": "number",
+    "title": "string",
+    "description": "string",
+    "image": "string",
+    "genre": "string",
+    "authorId": "number",
+    "authorName": "string"
+  }
+]
+```
+
+### Get Book by ID
+
+```http
+GET /api/books/:id
+```
+
+**Parameters:**
+
+- `id`: Book ID (number)
+
+**Response:**
+
+- Status: 200 OK
+- Body:
+
+```json
+{
+  "id": "number",
+  "title": "string",
+  "description": "string",
+  "image": "string",
+  "genre": "string",
+  "authorId": "number",
+  "authorName": "string"
+}
+```
+
+### Create Book
+
+```http
+POST /api/books
+```
+
+**Headers:**
+
+- Requires authentication cookie
+
+**Request Body:**
+
+```json
+{
+  "title": "string", // required
+  "description": "string", // required
+  "image": "string", // required
+  "genre": "string", // required
+  "authorId": "number", // required, must match authenticated user
+  "authorName": "string" // required
+}
+```
+
+**Response:**
+
+- Status: 201 Created
+- Body: Created book object
+
+### Update Book
+
+```http
+PUT /api/books/:id
+```
+
+**Headers:**
+
+- Requires authentication cookie
+
+**Parameters:**
+
+- `id`: Book ID (number)
+
+**Request Body:**
+
+```json
+{
+  "title": "string", // required
+  "description": "string", // required
+  "image": "string", // required
+  "genre": "string", // required
+  "authorId": "number", // required, must match authenticated user
+  "authorName": "string" // required
+}
+```
+
+**Response:**
+
+- Status: 200 OK
+- Body: Updated book object
+
+### Delete Book
+
+```http
+DELETE /api/books/:id
+```
+
+**Headers:**
+
+- Requires authentication cookie
+
+**Parameters:**
+
+- `id`: Book ID (number)
+
+**Response:**
+
+- Status: 204 No Content
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+
+```json
+{
+  "error": "Missing required fields"
+}
+```
+
+### 401 Unauthorized
+
+```json
+{
+  "error": "No token provided"
+}
+```
+
+or
+
+```json
+{
+  "error": "Invalid token"
+}
+```
+
+### 403 Forbidden
+
+```json
+{
+  "error": "Unauthorized to edit this book"
+}
+```
+
+### 404 Not Found
+
+```json
+{
+  "error": "Book not found"
+}
+```
+
+or
+
+```json
+{
+  "error": "User not found"
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+## Notes
+
+1. All protected routes require a valid JWT token in the HTTP-only cookie
+2. Book operations (create, update, delete) can only be performed by the book's author
+3. The server runs on port 3001 by default
+4. CORS is enabled for the frontend running on `http://localhost:5173`
